@@ -7,7 +7,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import com.google.gson.JsonElement;
 
-@NonNullByDefault({})
+@NonNullByDefault
 public interface UbusTransport {
     CompletableFuture<JsonElement> call(String session, String object, String method, Map<String, JsonElement> params);
 }

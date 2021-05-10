@@ -11,7 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-@NonNullByDefault({})
+@NonNullByDefault
 public class UbusTransportHttp implements UbusTransport {
     private final JsonRpc rpc;
 

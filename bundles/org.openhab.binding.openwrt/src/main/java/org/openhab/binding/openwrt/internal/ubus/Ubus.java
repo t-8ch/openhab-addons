@@ -10,7 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-@NonNullByDefault({})
+@NonNullByDefault
 public class Ubus {
     private final UbusTransport transport;
     private final static String NULL_SESSION = "00000000000000000000000000000000";
