@@ -20,4 +20,39 @@
 		</config-description>
 	</bridge-type>
 
+	<bridge-type id="wifi-device">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="device"/>
+		</supported-bridge-type-refs>
+
+		<label>Wifi Device</label>
+
+		<channels>
+			<channel id="channel" typeId="wifiChannel"/>
+			<channel id="ssid" typeId="wifiSSID"/>
+			<channel id="country" typeId="wifiCountry"/>
+		</channels>
+
+		<config-description>
+			<parameter name="name" type="text" required="true">
+				<label>Name</label>
+			</parameter>
+		</config-description>
+	</bridge-type>
+
+	<channel-type id="wifiChannel">
+		<item-type>Number</item-type>
+		<label>Wifi Channel</label>
+	</channel-type>
+
+	<channel-type id="wifiSSID">
+		<item-type>String</item-type>
+		<label>Wifi SSID</label>
+	</channel-type>
+
+	<channel-type id="wifiCountry">
+		<item-type>String</item-type>
+		<label>Wifi Regulatory Domain Country</label>
+	</channel-type>
+
 </thing:thing-descriptions>

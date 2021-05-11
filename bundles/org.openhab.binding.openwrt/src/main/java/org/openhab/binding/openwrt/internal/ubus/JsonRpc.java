@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -26,6 +27,7 @@ public class JsonRpc {
     private int id = 1;
     private final URI uri;
     private final HttpClient client = HttpClient.newHttpClient();
+    private final Gson gson = new Gson();
 
     public JsonRpc(URI uri) {
         this.uri = uri;
@@ -58,7 +60,7 @@ public class JsonRpc {
     private final HttpResponse.BodyHandler<JsonElement> jsonRpcBodyHandler = responseInfo -> HttpResponse.BodySubscribers
             .mapping(HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8), string -> {
                 log.warn("Received response with payload '{}'", string);
-                return new Gson().fromJson(string, JsonElement.class);
+                return Objects.requireNonNull(gson.fromJson(string, JsonElement.class));
             });
 
     public CompletableFuture<JsonElement> call(String method, @Nullable Params params) {
@@ -95,7 +97,7 @@ public class JsonRpc {
     }
 
     public static class JsonRcpException extends RuntimeException {
-        public JsonRcpException(int code, String message, Exception parent) {
+        public JsonRcpException(int code, String message, @Nullable Exception parent) {
             super(String.format("%s: %s", code, message), parent);
         }
     }

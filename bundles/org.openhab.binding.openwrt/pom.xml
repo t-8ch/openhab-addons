@@ -10,6 +10,7 @@
 
   <groupId>net.weissschuh.openhab.binding</groupId>
   <artifactId>openwrt</artifactId>
+  <version>3.0.2</version>
 
   <developers>
     <developer>

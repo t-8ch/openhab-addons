@@ -5,7 +5,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
@@ -14,20 +16,41 @@ import com.google.gson.JsonPrimitive;
 public class Ubus {
     private final UbusTransport transport;
     private final static String NULL_SESSION = "00000000000000000000000000000000";
-    private String session = NULL_SESSION;
+    private @Nullable String session = null;
     private final Auth auth;
+    private final Gson gson = new Gson();
 
     public Ubus(UbusTransport transport, Auth auth) {
         this.transport = transport;
         this.auth = auth;
     }
 
-    private CompletableFuture<JsonElement> call(String object, String method) {
+    public CompletableFuture<JsonElement> call(String object, String method) {
         return call(object, method, Map.of());
     }
 
-    private CompletableFuture<JsonElement> call(String object, String method, Map<String, JsonElement> params) {
-        return transport.call(session, object, method, params).thenApply(r -> {
+    public <T> CompletableFuture<T> call(Class<T> clazz, String object, String method) {
+        return call(clazz, object, method, Map.of());
+    }
+
+    public <T> CompletableFuture<T> call(Class<T> clazz, String object, String method,
+            Map<String, JsonElement> params) {
+        return call(object, method, params).thenApply(e -> gson.fromJson(e, clazz));
+    }
+
+    public CompletableFuture<JsonElement> call(String object, String method, Map<String, JsonElement> params) {
+        CompletableFuture<String> sessionId;
+        if (session == null) {
+            sessionId = login();
+        } else {
+            sessionId = CompletableFuture.completedFuture(session);
+        }
+        return sessionId.thenComposeAsync(s -> callInternal(s, object, method, params));
+    }
+
+    private CompletableFuture<JsonElement> callInternal(String sessionParam, String object, String method,
+            Map<String, JsonElement> params) {
+        return transport.call(sessionParam, object, method, params).thenApply(r -> {
             JsonArray array = r.getAsJsonArray();
             int code = array.get(0).getAsInt();
             Optional<UbusError> error = UbusError.fromCode(code);
@@ -38,14 +61,10 @@ public class Ubus {
         });
     }
 
-    public CompletableFuture<Void> login() {
-        session = NULL_SESSION;
-        return call("session", "login",
+    private CompletableFuture<String> login() {
+        return callInternal(NULL_SESSION, "session", "login",
                 Map.of("username", new JsonPrimitive(auth.username), "password", new JsonPrimitive(auth.password)))
-                        .thenApply(res -> {
-                            session = res.getAsJsonObject().get("ubus_rpc_session").getAsString();
-                            return null;
-                        });
+                        .thenApply(res -> res.getAsJsonObject().get("ubus_rpc_session").getAsString());
     }
 
     public static class Auth {
